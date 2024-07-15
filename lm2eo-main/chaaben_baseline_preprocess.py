@@ -5,6 +5,7 @@
 import ast
 import json
 import  os
+import re
 from typing import List
 import pandas as pd
 
@@ -52,7 +53,20 @@ def get_corresponding_names(data_dict_source_node,data_dict_target_node ):
     target_name = get_name(data_dict_target_node)
     return f"['{source_name}','{target_name}']"
 
-def parse_last_entry(entry):
+def get_src_tgt_nodes (src_id, tgt_id, src_node_label,tgt_node_label,edge_dict_format ):
+    if src_node_label == '"{}"':
+        src_node_label = edge_dict_format[src_id]
+
+    if tgt_node_label == '"{}"':
+        tgt_node_label = edge_dict_format[tgt_id]
+
+    edge_dict_format[src_id] = src_node_label
+    edge_dict_format[tgt_id] = tgt_node_label
+
+    return src_node_label, tgt_node_label, edge_dict_format
+
+
+def parse_last_entry(entry, compl):
         entries= get_prompt_graphs(entry)
        # entries = entry.split('$$\n---\n')
         last_entry = entries[-1].strip()  # Get the last entry and strip whitespace
@@ -68,18 +82,12 @@ def parse_last_entry(entry):
 
                 is_edge, src_id, tgt_id, edge_label, src_node_label, tgt_node_label = parse_edge(edge, version=V_JSON)
                 if (not is_edge): 
-                    print("problem with reading string")
-                    break; 
+                    print("problem with reading string") #TODO there is one graph 3367 for which somehow the definiton of node 0 is missing
+                    return final_baseline_info, compl; 
+                
+                src_node_label,tgt_node_label, edge_dict_format= get_src_tgt_nodes (src_id, tgt_id, src_node_label,tgt_node_label,edge_dict_format )
 
-                if src_node_label == '"{}"':
-                    src_node_label = edge_dict_format[src_id]
-
-                if tgt_node_label == '"{}"':
-                    tgt_node_label = edge_dict_format[tgt_id]
-
-                edge_dict_format[src_id] = src_node_label
-                edge_dict_format[tgt_id] = tgt_node_label
-
+                
                 try:
                     src_node_label_info = json.loads(clean_up_string(src_node_label))
                     data_dict_source_node = ast.literal_eval(src_node_label_info)
@@ -103,9 +111,50 @@ def parse_last_entry(entry):
                             final_baseline_info += ","+get_corresponding_names(data_dict_source_node, data_dict_target_node)
                     except KeyError as e:
                         print("Key error while accessing node attributes:", e)
-                    
-      
-        return final_baseline_info
+        ################################################           
+        #please also change the format of the completion
+
+        #only consider the gt and cut away $$
+        lines = compl.split('\n')
+        completion = lines[0]
+        is_edge, src_id, tgt_id, edge_label, src_node_label, tgt_node_label = parse_edge("e"+completion, version=V_JSON)
+        if (not is_edge): 
+            print("problem with reading string")
+        
+        src_node_label,tgt_node_label, edge_dict_format= get_src_tgt_nodes (src_id, tgt_id, src_node_label,tgt_node_label,edge_dict_format )
+
+
+        try:
+            src_node_label_info = json.loads(clean_up_string(src_node_label))
+            data_dict_source_node = ast.literal_eval(src_node_label_info)
+        
+        except (json.JSONDecodeError, ValueError) as e:
+            print("Failed to decode JSON for source node:", e)
+            data_dict_source_node = {}
+        try:
+            cleaned_up = clean_up_string(tgt_node_label)
+             
+            cleaned_up = re.sub(r"(\'value\': )(\becore::EDoubleObject\b)", r"\1'\2'", cleaned_up)
+            tgt_node_label_info = json.loads(cleaned_up)
+            data_dict_target_node = ast.literal_eval(tgt_node_label_info)
+
+        except (json.JSONDecodeError, ValueError) as e:
+            print("Failed to decode JSON for target node:", e)
+            data_dict_target_node = {}
+
+        if data_dict_source_node and data_dict_target_node:
+            try:
+                compl = get_corresponding_names(data_dict_source_node, data_dict_target_node)
+            except KeyError as e:
+                print("Key error while accessing node attributes:", e)
+
+
+
+
+
+
+
+        return final_baseline_info, compl
           #  final_baseline_info+= "["+ data_dict_source_node['attributes']['name'] + ","+ data_dict_target_node['attributes']['name'] +"]"
 
 
@@ -116,18 +165,21 @@ filtered_df.rename(columns={"prompt": "ramc_prompt"}, inplace=True)
 filtered_df.rename(columns={"completion": "ramc_completion"}, inplace=True)
 
 
-filtered_df["prompt"] = filtered_df.apply(lambda row: parse_last_entry(row["ramc_prompt"]), axis=1)
-
+for index, row in filtered_df.iterrows():
+    prompt, compl = parse_last_entry(row["ramc_prompt"],row["ramc_completion"] )
+    filtered_df.at[index, "prompt"] = prompt
+    filtered_df.at[index, "completion"] = compl
 
 filtered_df.loc[filtered_df.index != filtered_df.index, "prompt"] = ""
-
+filtered_df.loc[filtered_df.index != filtered_df.index, "completion"] = ""
 
 df["prompt"] = ""
+df["completion"] = ""
 
 
 # Update the original DataFrame with values from the filtered DataFrame
 df.update(filtered_df[["prompt"]])
-
+df.update(filtered_df[["completion"]])
 # Save the modified DataFrame
 
 output_path='./datasets_reduced/revision/results/baseline_data.csv'
