@@ -64,6 +64,20 @@ def retrieveConcepts(res):
 
     return concepts
 
+def retrieveConceptsNew(res):
+    #does not make any sentence in our case because we also allow "."
+    #S = re.sub(r'\W+', ' ', res)
+    #FirstSet = S.split(' ')
+    #NewConcepts = wordninja.split(S)
+    #NewConcepts.extend(FirstSet)
+    #NewConcepts = ' '.join(NewConcepts).split()
+    #concepts = set(NewConcepts)
+    #concepts = list(concepts)
+    concepts = removeLetter(concepts)
+    concepts = removeDuplicated(concepts)
+
+    return concepts
+
 def predictFinalListDavinci(datafewshots, designList_):
     prompt = SYSTEM_INSTRUCTION + datafewshots + '\n' + str(designList_) + ','
 
@@ -82,7 +96,7 @@ def predictFinalListDavinci(datafewshots, designList_):
     completion_string = result.choices[0].text.strip()
     # Uncomment if you have these functions implemented
     # total_tokens, completion_tokens = token_counter_gpt(result)
-    #concepts = retrieveConcepts(str(designList_) + ',' + completion_string)
+    # concepts = retrieveConcepts(str(designList_) + ',' + completion_string)
 
     return completion_string 
 
@@ -105,10 +119,12 @@ def predictFinalListChatModels(datafewshots, designList_):
     presence_penalty=0      # Controls the likelihood of introducing new topics
     )
 
-   # total_tokens, completion_tokens = token_counter_gpt(result)
+
     completion_string = completion_gpt_chat(result)
-    #Wenn ich das vom paper hole, macht es auf unseren daten keinen sinn mehr
-   # concepts = retrieveConcepts(str(designList_) + ',' + completion_string)
+    #We cant use this on our data, since they are slightly different 
+    #also in the originial implementation this seems to be a bug, because
+    #concepts = retrieveConcepts(str(designList_) + ',' + completion_string)
+    #so the partical model is also appened
 
     
     return completion_string,  #total_tokens, completion_tokens
@@ -148,13 +164,15 @@ for index, row in context_chaaben.iterrows():
 
         count += 1
         # set in data file
-        context_chaaben.at[index, 'completion_generated'] = completion_string
+        context_chaaben.at[index, 'completion_string'] = completion_string
     #    context_chaaben.at[index, 'completion_tokens'] = completion_tokens
      #   context_chaaben.at[index, 'total_tokens'] = total_tokens
         # Save the DataFrame to CSV in each iteration
-        context_chaaben.to_csv('results_baseline_chatgpt.csv', index=False)
+        context_chaaben.to_csv(output_path, index=False)
         if DEBUGGING_MODE == True:
+            print("stopping")
             break
+         
 
 
       
