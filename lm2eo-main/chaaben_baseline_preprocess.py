@@ -174,6 +174,8 @@ filtered_df.loc[filtered_df.index != filtered_df.index, "prompt"] = ""
 filtered_df.loc[filtered_df.index != filtered_df.index, "completion"] = ""
 
 df["prompt"] = ""
+
+df.rename(columns={"completion": "ramc_completion"}, inplace=True)
 df["completion"] = ""
 
 
