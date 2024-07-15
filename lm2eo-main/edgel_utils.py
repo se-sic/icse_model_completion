@@ -591,6 +591,7 @@ def clean_up_string(input: str) -> str:
     input = re.sub('\'stack\' ', 'stack ', input) # one-off thing
     input = re.sub('\'selected\' ', 'selected ', input) # one-off thing
     input = re.sub(': \'ecore::EDoubleObject\'', ': ecore::EDoubleObject', input) # one-off thing
+    input = re.sub(':"ecore::EDoubleObject"', ': ecore::EDoubleObject', input) # one-off thing
     input = re.sub('\'in\' ', 'in ', input) # one-off thing
 
 
