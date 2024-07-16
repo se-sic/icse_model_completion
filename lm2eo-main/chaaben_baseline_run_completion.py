@@ -1,9 +1,13 @@
+import ast
 import os
+import numpy
 from openai import OpenAI
 from openai import Completion
 import pandas as pd
 import re
 import wordninja 
+import ast
+from itertools import chain, combinations
 
 # Load API key and setup OPEN-AI Lib
 if not os.path.exists('../secrets/openai.key'):
@@ -16,12 +20,12 @@ with open('../secrets/openai.key', 'r') as f:
 client = OpenAI()
 
 #TODO <THIS IS DONE FOR DEBUGGING REASONS, if true only the first item is send to GPT
-DEBUGGING_MODE = True
+DEBUGGING_MODE = False
 TEMPERATURE = 0.7 #like specified in the chaaben et al. baseline
 MAX_TOKENS = 15 #like specified in the chaaben et al. baseline
 MODEL_ID = "davinci-002"  #TO have a fairer comparison we use also gpt4
 SYSTEM_INSTRUCTION = 'Continue the line: \n ' #like specified in the chaaben et al. baseline
-
+SYSTEM_INSTRUCTION = 'Generate related concepts: \n'
 ####################################################################################################################
 ####################################################################################################################
 ####################################### baseline spezific implementation ###########################################
@@ -109,10 +113,25 @@ def predictFinalListChatModels(datafewshots, designList_):
     completion_string = completion_gpt_chat(result)
     return completion_string
 
+def powerset(input_string):
+    # Parse the string representation of the list of lists into an actual list of tuples
+    input_list = ast.literal_eval(input_string)
+    if type(input_list[0]) is not list:
+        # It's a single list, so wrap it in another list to handle uniformly
+        input_list = [input_list]
+    # Helper function to generate all possible combinations of elements in a list
+    def all_combinations(lst):
+        return chain(*[combinations(lst, i) for i in range(1, len(lst)+1)])
+    
+    # Generate power set
+    result = list(all_combinations(input_list))
+    
+    return result
+
 
 #read the context, so partical models from our revision dataset
 input_path='./datasets_reduced/revision/results/baseline_data.csv'
-output_path='./datasets_reduced/revision/results/results_baseline_chatgpt.csv'
+output_path='./datasets_reduced/revision/results/results_baseline_chatgpt_powerset.csv'
 
 context_chaaben =pd.read_csv(input_path)
 
@@ -136,12 +155,20 @@ print(f"There are {count} rows with completion_type = ['Add_node']")
 count = 0
 for index, row in context_chaaben.iterrows():
     if row['completion_type'] == "['Add_node']" and re.match(r".*'changeType': 'Add', 'type': 'object'.*",row['ramc_completion']):
+        if (pd.isna(row['prompt'])): 
+            continue
+        all_prompts_combinations = powerset(row['prompt'])
 
+        all_results =[]
+        for item in all_prompts_combinations: 
+            prompt = item[0] 
         
-        completion_string= predictFinalListDavinci(few_shot_examples_chaaben_data,  row['prompt'])
-
-        count += 1
-        context_chaaben.at[index, 'completion_string'] = completion_string
+            completion_string= predictFinalListDavinci(few_shot_examples_chaaben_data,  str(prompt))
+            all_results.append(completion_string)
+            count += 1
+        
+        
+        context_chaaben.at[index, 'completion_string'] = all_results
 
         # Save the DataFrame to CSV in each iteration
         context_chaaben.to_csv(output_path, index=False)
