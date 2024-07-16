@@ -40,8 +40,9 @@ def clean_and_split(input_str):
             # If last part doesn't end with ']', it's considered incomplete and skipped
             continue
         cleaned_parts.append(part)
+    #just get the first element since we do not have more
 
-    return cleaned_parts
+    return cleaned_parts[0] if cleaned_parts else ""
 
 
 completion_ground_truth_ramc= dataset['ramc_completion']
@@ -62,46 +63,27 @@ absolute_amount = is_add_object.sum()
 df_filtered =dataset[is_add_object]
 
 completion_ground_truth_filtered = df_filtered ['completion']
+df_filtered['completion_string'] = df_filtered['completion_string'].fillna("")
 completion_generated_filtered = df_filtered['completion_string']
 # We get the completion className and name  
-df_filtered["classNames_generated"] = ""
-df_filtered["names_generated"] = ""
 
 
 #TODO also perform some stemming here
 
 
 # We get ground truth className and name 
-df_filtered[['classNames_ground_truth', 'names_ground_truth']] = completion_ground_truth_filtered.apply(
-    lambda x: clean_and_split(x)).apply(pd.Series)
 
-df_filtered[ ['classNames_generated', 'names_generated']] = completion_generated_filtered.apply(
-    lambda x: clean_and_split(x)).apply(pd.Series)
+df_filtered['simplified_gt'] = completion_ground_truth_filtered.apply(clean_and_split).apply(pd.Series)
+
+df_filtered[ 'simplified_gen'] = completion_generated_filtered.apply(clean_and_split).apply(pd.Series)
 
 
 
 # check when they are the same
-same_className = df_filtered['classNames_ground_truth'] == df_filtered['classNames_generated']
-print(same_className)
-same_name = df_filtered['names_ground_truth'] == df_filtered['names_generated']
-print(same_name)
-print(f'Relative amount of completions where the className is the same: {same_className.sum() / len(same_className)}')
-print(f'Absolute amount of completions where the className is the same: {same_className.sum()}')
-print(f'Relative amount of completions where the name is the same: {same_name.sum() / len(same_name)}')
-print(f'Absolute amount of completions where the name is the same: {same_name.sum()}')
-
-
-# concate the same_name information to the original dataframe
-df_filtered['same_name'] = same_name
-df_filtered['same_class'] = same_className
-
-# for all names that are not the same, print (on by one) the ground truth and generated name, and the full completion strings
-for i, row in df_filtered.iterrows():
-    if row['same_name'] == False:
-        print(f'Ground truth completion: {row["completion"]}')
-        print(f'Generated completion: {row["completion_string"]}')
-        print('')
-        
+same_all = df_filtered['simplified_gt'] == df_filtered['simplified_gen']
+#print(same_className)
+#same_name = df_filtered['names_ground_truth'] == df_filtered['names_generated']
+print(same_all)
 # save the dataset with the additional information
 df_filtered.to_csv(output_path)
 

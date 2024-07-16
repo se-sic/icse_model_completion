@@ -126,7 +126,7 @@ for i, row in few_shot_examples_chaaben.iterrows():
 # select data, i.e. fixed_prompt column. select only rows where completion_type = ['Add_node']
 count = 0
 for index, row in context_chaaben.iterrows():
-    if row['completion_type'] == "['Add_node']" and re.match(r".*'changeType': 'Add', 'type': 'object'.*",row['completion']):
+    if row['completion_type'] == "['Add_node']" and re.match(r".*'changeType': 'Add', 'type': 'object'.*",row['ramc_completion']):
         count += 1
 
 print(f"There are {count} rows with completion_type = ['Add_node']")
@@ -135,7 +135,7 @@ print(f"There are {count} rows with completion_type = ['Add_node']")
 # select data, i.e. fixed_prompt column. select only rows where completion_type = ['Add_node']
 count = 0
 for index, row in context_chaaben.iterrows():
-    if row['completion_type'] == "['Add_node']" and re.match(r".*'changeType': 'Add', 'type': 'object'.*",row['completion']):
+    if row['completion_type'] == "['Add_node']" and re.match(r".*'changeType': 'Add', 'type': 'object'.*",row['ramc_completion']):
 
         
         completion_string= predictFinalListDavinci(few_shot_examples_chaaben_data,  row['prompt'])
