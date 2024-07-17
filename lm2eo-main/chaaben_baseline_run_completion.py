@@ -22,10 +22,15 @@ client = OpenAI()
 #TODO <THIS IS DONE FOR DEBUGGING REASONS, if true only the first item is send to GPT
 DEBUGGING_MODE = False
 TEMPERATURE = 0.7 #like specified in the chaaben et al. baseline
-MAX_TOKENS = 15 #like specified in the chaaben et al. baseline
+MAX_TOKENS = 20 #like specified in the chaaben et al. baseline
 MODEL_ID = "davinci-002"  #TO have a fairer comparison we use also gpt4
-SYSTEM_INSTRUCTION = 'Continue the line: \n ' #like specified in the chaaben et al. baseline
+#SYSTEM_INSTRUCTION = 'Continue the line: \n ' #like specified in the chaaben et al. baseline
 SYSTEM_INSTRUCTION = 'Generate related concepts: \n'
+
+#read the context, so partical models from our revision dataset
+input_path='./datasets_reduced/revision/results/baseline_data_withanchor.csv'
+output_path='./datasets_reduced/revision/results/results_baseline_chatgpt_powerset_withanchor.csv'
+
 ####################################################################################################################
 ####################################################################################################################
 ####################################### baseline spezific implementation ###########################################
@@ -129,9 +134,6 @@ def powerset(input_string):
     return result
 
 
-#read the context, so partical models from our revision dataset
-input_path='./datasets_reduced/revision/results/baseline_data.csv'
-output_path='./datasets_reduced/revision/results/results_baseline_chatgpt_powerset.csv'
 
 context_chaaben =pd.read_csv(input_path)
 

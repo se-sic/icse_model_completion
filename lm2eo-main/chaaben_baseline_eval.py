@@ -2,9 +2,9 @@ import ast
 import pandas as pd
 import re
 from collections import Counter
-output_path ='./datasets_reduced/revision/results/results_iso_check_with_info_baseline_powerset.csv'
+output_path ='./datasets_reduced/revision/results/results_iso_check_with_info_baseline_powerset_withanchor.csv'
 # Given a csv file with the above format, this script will extract the completion and the completion_string from the csv
-dataset = pd.read_csv('./datasets_reduced/revision/results/results_baseline_chatgpt_powerset.csv')
+dataset = pd.read_csv('./datasets_reduced/revision/results/results_baseline_chatgpt_powerset_withanchor.csv')
 
 
 
@@ -26,23 +26,23 @@ def get_simple_name(class_name: str | float | None, name: float | str | None):
         return None
 
 def find_most_frequent(list_recommendations):
-    if len(list_recommendations)==0: 
-        return ("",0)
+    #never the case if len(list_recommendations)==0: 
+       # return ("",0)
     # Count the occurrences of each string in the list
     count = Counter(list_recommendations)
-    
     # Find the string with the highest frequency
-    if len(count)==0: 
-        return ("",0)
+    #never the case if len(count)==0: 
+      #  return ("",0)
     most_frequent = count.most_common(1)[0]  # This returns a tuple (element, count)
-    if most_frequent=="" and len(count) > 1:
-        most_frequent= count.most_common(2)[1]
+    #inever the casef most_frequent=="" and len(count) > 1:
+      #  most_frequent= count.most_common(2)[1]
 
     return most_frequent   
     return class_name + '.' + name
 def rank_for_connection(input_str):
     if (input_str==''): 
-        return input_str
+        #this is just import for that one example
+        return 'x'
     inputs = ast.literal_eval(input_str)
     list_recommendations = [clean_and_split(i)for i in inputs]
     most_frequent_string = find_most_frequent(list_recommendations)
@@ -51,7 +51,8 @@ def rank_for_connection(input_str):
 
 def rank_for_concepts(input_str): 
     if (input_str==''): 
-        return input_str
+        #this is just import for that one example
+        return 'x'
     inputs = ast.literal_eval(input_str)
     list_recommendations = [clean_and_split(i)for i in inputs]
     all_concepts = []
@@ -121,29 +122,32 @@ absolute_amount = is_add_object.sum()
 
 df_filtered =dataset[is_add_object]
 
-completion_ground_truth_filtered = df_filtered ['completion']
+df_filtered['completion'] = df_filtered['completion'].fillna("")
+df_filtered['simplified_gt_association'] = df_filtered ['completion']
+
+
 df_filtered['completion_string'] = df_filtered['completion_string'].fillna("")
-completion_generated_filtered = df_filtered['completion_string']
-# We get the completion className and name  
 
-
-#TODO also perform some stemming here
-
-
-# We get ground truth className and name 
-
-df_filtered['simplified_gt'] = completion_ground_truth_filtered.apply(clean_and_split).apply(pd.Series)
-
-df_filtered[ 'simplified_gen'] = completion_generated_filtered.apply(rank_for_connection).apply(pd.Series)
-df_filtered[ 'simplified_concepts'] = completion_generated_filtered.apply(rank_for_concepts).apply(pd.Series)
+df_filtered[ 'simplified_gen_association'] = df_filtered['completion_string'].apply(rank_for_connection).apply(pd.Series)
+df_filtered[ 'simplified_concept_ranked'] = df_filtered['completion_string'].apply(rank_for_concepts).apply(pd.Series)
 
 
 
 
 # check when they are the same
-df_filtered[ 'simplified_edge_correct'] = df_filtered['simplified_gt'] == df_filtered['simplified_gen']
-#print(same_className)
-#same_name = df_filtered['names_ground_truth'] == df_filtered['names_generated']
+df_filtered[ 'same_association'] = df_filtered['simplified_gt_association'] == df_filtered['simplified_gen_association']
+
+df_filtered['same_concept'] = df_filtered['simplified_concept_ranked'] == df_filtered['new_node_gt']
+# 2. Split the 'new_node_gt' column and assign to new columns
+df_filtered[['class_names_gt', 'names_gt']] = df_filtered['new_node_gt'].str.split('.', expand=True)
+
+# 3. Split the 'simplified_concept_ranked' column and assign to new columns
+df_filtered[['class_names_gen', 'names_gen']] = df_filtered['simplified_concept_ranked'].str.split('.', expand=True)
+
+df_filtered['same_class_name'] = df_filtered['class_names_gt'] == df_filtered['class_names_gen']
+
+# Compare 'names_gt' and 'names_gen' for equality
+df_filtered['same_name'] = df_filtered['names_gt'] == df_filtered['names_gen']
 
 # save the dataset with the additional information
 df_filtered.to_csv(output_path)
