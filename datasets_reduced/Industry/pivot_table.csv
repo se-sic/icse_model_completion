@@ -1,0 +1,51 @@
+correctness,,,,0,0,0,1,2
+structural_isomorphic_completion,,,,FALSE,FALSE,TRUE,TRUE,TRUE
+correct_format,,,,FALSE,TRUE,TRUE,TRUE,TRUE
+project_specific,complex_refactoring,noise_present,similar_few_shot,,,,,
+FALSE,FALSE,FALSE,FALSE,1,3,1,2,1
+FALSE,FALSE,FALSE,TRUE,2,1,3,8,24
+FALSE,FALSE,TRUE,TRUE,,,2,2,
+FALSE,TRUE,FALSE,FALSE,1,,1,,2
+FALSE,TRUE,FALSE,TRUE,,,,4,8
+FALSE,TRUE,TRUE,TRUE,,,,1,
+TRUE,FALSE,FALSE,FALSE,3,1,3,,3
+TRUE,FALSE,FALSE,TRUE,,,1,2,30
+TRUE,FALSE,TRUE,FALSE,1,1,,,
+TRUE,FALSE,TRUE,TRUE,1,1,,,4
+TRUE,TRUE,FALSE,FALSE,,,,,1
+TRUE,TRUE,FALSE,TRUE,,,,,3
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,Semantically Correct,Incorrect,,,,Total,
+,,,Semantically Incorrect (but conceivable),Semantically Incorrect,Structurally Incorrect,Format Incorrect,,
+Noise Present,TRUE,4,3,2,2,2,13,
+,FALSE,72,16,9,5,7,109,
+Project Specific Refactoring,TRUE,41,2,4,3,5,55,
+,FALSE,35,17,7,4,4,67,
+Complex Refactoring,TRUE,14,5,1,0,1,21,
+,FALSE,62,14,10,7,8,101,
+Reoccuring Pattern,TRUE,69,17,6,2,3,97,
+,FALSE,7,2,5,5,6,25,
+Total,,76,19,11,7,9,122,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,Semantically Correct,Incorrect,,,,Total,
+,,,Semantically Incorrect (but conceivable),Semantically Incorrect,Structurally Incorrect,Format Incorrect,,
+Noise Present,TRUE,30.77%,23.08%,15.38%,15.38%,15.38%,13,
+,FALSE,66.06%,14.68%,8.26%,4.59%,6.42%,109,
+Project Specific Refactoring,TRUE,74.55%,3.64%,7.27%,5.45%,9.09%,55,
+,FALSE,52.24%,25.37%,10.45%,5.97%,5.97%,67,
+Complex Refactoring,TRUE,66.67%,23.81%,4.76%,0.00%,4.76%,21,
+,FALSE,61.39%,13.86%,9.90%,6.93%,7.92%,101,
+Reoccuring Pattern,TRUE,71.13%,17.53%,6.19%,2.06%,3.09%,97,
+,FALSE,28.00%,8.00%,20.00%,20.00%,24.00%,25,
+Total,,62.30%,15.57%,9.02%,5.74%,7.38%,122,
