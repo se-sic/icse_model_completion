@@ -33,6 +33,8 @@ The files `results_iso_check.jsonl`, additional include the evaluation via the g
 
 For the `Synthetic`  dataset, the `results` folder additionally includes two folders for **Experiment 3** and **Experiment 4** results, that is the results of the fine-tuning, the results of the completion evaluation of the fine-tuned language models, and the results of the comparison of few-shot learning and fine-tuning.
 
+For the `Industry` dataset, we include the results only and several pivot tables of the results.
+
 ## How to Run
 
 The scripts in this repository consumes the JSON simple change graphs that are part of the replication package.
